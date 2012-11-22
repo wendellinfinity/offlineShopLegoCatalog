@@ -31,7 +31,13 @@
     // Update the user interface for the detail item.
 
     if (self.detailItem) {
-        self.detailDescriptionLabel.text = [[self.detailItem valueForKey:@"timeStamp"] description];
+        double price;
+        price = [[self.detailItem valueForKey:@"price"] doubleValue];
+        self.itemTitle.text = [[self.detailItem valueForKey:@"title"] description];
+        self.code.text = [[self.detailItem valueForKey:@"code"] description];
+        self.priceUSD.text = [@"USD " stringByAppendingFormat:@"%.2f",price];
+        //self.priceHKD.text = [[self.detailItem valueForKey:@"code"] description];
+        //self.pricePHP.text = [[self.detailItem valueForKey:@"code"] description];
     }
 }
 
@@ -39,6 +45,7 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    [self.itemTitle sizeToFit];
     [self configureView];
 }
 

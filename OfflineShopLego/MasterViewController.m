@@ -16,6 +16,8 @@
 
 @implementation MasterViewController
 
+@synthesize searchBar;
+
 - (void)awakeFromNib
 {
     [super awakeFromNib];
@@ -24,11 +26,25 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
-    self.navigationItem.leftBarButtonItem = self.editButtonItem;
+    // FROM: gist.github.com/435996
+    // Really a UISearchBarTextField, but that header is private.
+    UITextField *searchField = nil;
+    for (UIView *subview in searchBar.subviews) {
+        if ([subview isKindOfClass:[UITextField class]]) {
+            searchField = (UITextField *)subview;
+            break;
+        }
+    }    
+    if (searchField) {
+        searchField.enablesReturnKeyAutomatically = NO;
+    }
 
-    UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
-    self.navigationItem.rightBarButtonItem = addButton;
+    // from stackoverflow.com/questions/4882332/uisearchbar-in-place-of-uinavigationcontroller-uinavigationbar
+    // show the cancel button in the UISearchBar.
+    searchBar.showsCancelButton = YES;
+    // add UISearchBar into titleView of the UINavigationBar.
+    self.navigationItem.titleView = searchBar;
+    searchBar.delegate = self;
 }
 
 - (void)didReceiveMemoryWarning
@@ -45,7 +61,7 @@
     
     // If appropriate, configure the new managed object.
     // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
-    [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
+    [newManagedObject setValue:[NSDate date] forKey:@"title"];
     
     // Save the context.
     NSError *error = nil;
@@ -72,7 +88,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell"];
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
@@ -80,28 +96,6 @@
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
 {
     // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
-        [context deleteObject:[self.fetchedResultsController objectAtIndexPath:indexPath]];
-        
-        NSError *error = nil;
-        if (![context save:&error]) {
-             // Replace this implementation with code to handle the error appropriately.
-             // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        }
-    }   
-}
-
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // The table view should not be re-orderable.
     return NO;
 }
 
@@ -123,15 +117,25 @@
     }
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    
     // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Event" inManagedObjectContext:self.managedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"LegoItem" inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entity];
+    [NSFetchedResultsController deleteCacheWithName:@"Master"];
+    if(searchKey != nil && [searchKey length] > 0) {
+        NSPredicate *predicateTemplate = [NSPredicate predicateWithFormat:
+                                          @"(code contains[cd] %@) OR \
+                                          (title contains[cd] %@)", searchKey, searchKey];
+        [fetchRequest setPredicate:predicateTemplate];
+    }
     
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:20];
     
+    //[fetchRequest setFetchLimit:80];
+    
     // Edit the sort key as appropriate.
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timeStamp" ascending:NO];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES];
     NSArray *sortDescriptors = @[sortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
@@ -216,7 +220,66 @@
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
     NSManagedObject *object = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.textLabel.text = [[object valueForKey:@"timeStamp"] description];
+    cell.textLabel.text = [[object valueForKey:@"title"] description];
+    cell.detailTextLabel.text = [[object valueForKey:@"code"] description];
+}
+
+#pragma UISearchBarDelegate
+// from stackoverflow.com/questions/6203472/designing-ios-searchbar
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBarSource {
+    [self handleSearch:searchBarSource];
+}
+
+- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBarSource {
+    [self handleSearch:searchBarSource];
+}
+
+- (void)handleSearch:(UISearchBar *)searchBarSource {
+    searchKey = self.searchBar.text;
+
+    NSFetchRequest *fetchRequest = [self.fetchedResultsController fetchRequest];
+    // Edit the entity name as appropriate.
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"LegoItem" inManagedObjectContext:self.managedObjectContext];
+    [fetchRequest setEntity:entity];
+    [NSFetchedResultsController deleteCacheWithName:@"Master"];
+    if(searchKey != nil && [searchKey length] > 0) {
+        NSPredicate *predicateTemplate = [NSPredicate predicateWithFormat:
+                                          @"(code contains[cd] %@) OR \
+                                          (title contains[cd] %@)", searchKey, searchKey];
+        [fetchRequest setPredicate:predicateTemplate];
+    } else {
+        [fetchRequest setPredicate:nil];
+    }
+    
+    // Set the batch size to a suitable number.
+    [fetchRequest setFetchBatchSize:20];
+    
+    //[fetchRequest setFetchLimit:80];
+    
+    // Edit the sort key as appropriate.
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES];
+    NSArray *sortDescriptors = @[sortDescriptor];
+    
+    [fetchRequest setSortDescriptors:sortDescriptors];
+        
+	NSError *error = nil;
+	if (![self.fetchedResultsController performFetch:&error]) {
+        // Replace this implementation with code to handle the error appropriately.
+        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+	    NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+	    abort();
+	}
+
+    
+    [searchBar resignFirstResponder]; // if you want the keyboard to go away
+    // reload the table view
+    [self.tableView reloadData];
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *) searchBarSource {
+    searchKey = nil;
+    [searchBarSource resignFirstResponder]; // if you want the keyboard to go away
 }
 
 @end

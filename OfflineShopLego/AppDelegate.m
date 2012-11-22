@@ -21,6 +21,7 @@
     // Override point for customization after application launch.
     UINavigationController *navigationController = (UINavigationController *)self.window.rootViewController;
     MasterViewController *controller = (MasterViewController *)navigationController.topViewController;
+    
     controller.managedObjectContext = self.managedObjectContext;
     return YES;
 }
@@ -50,6 +51,7 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Saves changes in the application's managed object context before the application terminates.
+    // TOX: run this when lego items have been loaded already
     [self saveContext];
 }
 
@@ -81,8 +83,47 @@
     if (coordinator != nil) {
         _managedObjectContext = [[NSManagedObjectContext alloc] init];
         [_managedObjectContext setPersistentStoreCoordinator:coordinator];
+        // create the lego data here
+        // TOX: load the lego stuff here
+        // load the lego items here
+        /*
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"lego" ofType:@"plist"];
+        legoItems = [[NSArray alloc] initWithContentsOfFile:path];
+        
+        if(legoItems != nil) {
+            @autoreleasepool {
+                for (int i=0; i<legoItems.count; i++) {
+                    NSDictionary *item = [[NSDictionary alloc] initWithDictionary:[legoItems objectAtIndex:i]];
+                    [self insertNewObject:[item valueForKey:@"code"] :[item valueForKey:@"title"] :[[item valueForKey:@"price"] doubleValue]];
+                }
+
+            }
+        }
+        */
     }
     return _managedObjectContext;
+}
+
+
+- (void)insertNewObject:(NSString*)code: (NSString*)title: (double) price
+{
+    NSManagedObjectContext *context = _managedObjectContext;
+    NSManagedObject *newManagedObject = [NSEntityDescription insertNewObjectForEntityForName:@"LegoItem" inManagedObjectContext:context];
+    
+    // If appropriate, configure the new managed object.
+    // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
+    [newManagedObject setValue:title forKey:@"title"];
+    [newManagedObject setValue:code forKey:@"code"];
+    [newManagedObject setValue:[NSNumber numberWithFloat:price] forKey:@"price"];
+    
+    // Save the context.
+    NSError *error = nil;
+    if (![context save:&error]) {
+        // Replace this implementation with code to handle the error appropriately.
+        // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
 }
 
 // Returns the managed object model for the application.
@@ -97,6 +138,15 @@
     return _managedObjectModel;
 }
 
+
+// FROM: stackoverflow.com/questions/8143582/shipping-a-pre-populated-sqlite-db-within-the-app-path-of-the-db-on-startup
+- (NSString *)applicationDocumentsDirectoryString {
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+    return basePath;
+}
+
 // Returns the persistent store coordinator for the application.
 // If the coordinator doesn't already exist, it is created and the application's store added to it.
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator
@@ -105,11 +155,27 @@
         return _persistentStoreCoordinator;
     }
     
-    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"OfflineShopLego.sqlite"];
+    //NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"OfflineShopLego.sqlite"];
+    // FROM: www.raywenderlich.com/980/core-data-tutorial-how-to-preloadimport-existing-data
+    NSString *storePath = [[self applicationDocumentsDirectoryString]
+                           stringByAppendingPathComponent: @"OfflineShopLego.sqlite"];
+    NSURL *storeUrl = [NSURL fileURLWithPath:storePath];
     
+    // Put down default db if it doesn't already exist
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:storePath]) {
+        NSString *defaultStorePath = [[NSBundle mainBundle]
+                                      pathForResource:@"OfflineShopLego" ofType:@"sqlite"];
+        if (defaultStorePath) {
+            [fileManager copyItemAtPath:defaultStorePath toPath:storePath error:NULL];
+        }
+    }
+    
+    // TOX: when model changes, run this, but clear everything for now
+    //[[NSFileManager defaultManager] removeItemAtURL:storeURL error:nil];
     NSError *error = nil;
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeUrl options:nil error:&error]) {
         /*
          Replace this implementation with code to handle the error appropriately.
          
