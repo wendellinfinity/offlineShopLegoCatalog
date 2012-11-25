@@ -38,7 +38,25 @@
     if (searchField) {
         searchField.enablesReturnKeyAutomatically = NO;
     }
-
+    
+    // place a settings button on top
+    // Initialize the UIButton
+    // from: eureka.ykyuen.info/2010/06/11/iphone-adding-image-to-uibarbuttonitem/
+    // icon from: app-bits.com/free-icons.html
+    //UIImage *buttonImage = [UIImage imageNamed:@"settingsButton.png"];
+    UIButton *settingsButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    //[settingsButton setImage:buttonImage forState:UIControlStateNormal];
+    //settingsButton.frame = CGRectMake(0.0, 0.0, buttonImage.size.width+5, buttonImage.size.height+5);
+    
+    // Initialize the UIBarButtonItem
+    UIBarButtonItem *settingsBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:settingsButton];
+    
+    // Set the Target and Action for aButton
+    [settingsButton addTarget:self action:@selector(launchSettings:) forControlEvents:UIControlEventTouchUpInside];
+    
+    // Then you can add the aBarButtonItem to the UIToolbar
+    self.navigationItem.leftBarButtonItem = settingsBarButtonItem;
+    
     // from stackoverflow.com/questions/4882332/uisearchbar-in-place-of-uinavigationcontroller-uinavigationbar
     // show the cancel button in the UISearchBar.
     searchBar.showsCancelButton = YES;
@@ -53,24 +71,10 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)insertNewObject:(id)sender
+
+- (void)launchSettings:(id)sender
 {
-    NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
-    NSEntityDescription *entity = [[self.fetchedResultsController fetchRequest] entity];
-    NSManagedObject *newManagedObject = [NSEntityDescription insertNewObjectForEntityForName:[entity name] inManagedObjectContext:context];
-    
-    // If appropriate, configure the new managed object.
-    // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
-    [newManagedObject setValue:[NSDate date] forKey:@"title"];
-    
-    // Save the context.
-    NSError *error = nil;
-    if (![context save:&error]) {
-         // Replace this implementation with code to handle the error appropriately.
-         // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
+    [self performSegueWithIdentifier:@"showSettings" sender:self];
 }
 
 #pragma mark - Table View

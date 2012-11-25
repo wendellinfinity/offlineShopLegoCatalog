@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @interface DetailViewController : UIViewController {
-    NSString *imagePath;
+    NSDictionary *currencies;
 }
 
 @property (strong, nonatomic) id detailItem;

@@ -598,6 +598,7 @@
 		B794A3AC165E92120036F394 /* 9847.jpg in Resources */ = {isa = PBXBuildFile; fileRef = B794A16F165E92120036F394 /* 9847.jpg */; };
 		B794A3AE165E96000036F394 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B794A3AD165E96000036F394 /* Icon.png */; };
 		B794A3B0165E96030036F394 /* Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B794A3AF165E96030036F394 /* Icon@2x.png */; };
+		B7A2B9371661C61F00ABC5ED /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A2B9361661C61F00ABC5ED /* SettingsViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -1198,6 +1199,8 @@
 		B794A16F165E92120036F394 /* 9847.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 9847.jpg; sourceTree = "<group>"; };
 		B794A3AD165E96000036F394 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
 		B794A3AF165E96030036F394 /* Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon@2x.png"; sourceTree = "<group>"; };
+		B7A2B9351661C61F00ABC5ED /* SettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsViewController.h; sourceTree = "<group>"; };
+		B7A2B9361661C61F00ABC5ED /* SettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1226,6 +1229,8 @@
 		B70E4C67165BE63000B1964B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				B794A3AF165E96030036F394 /* Icon@2x.png */,
+				B794A3AD165E96000036F394 /* Icon.png */,
 				B7949F32165E92120036F394 /* images */,
 				B7949F28165E7BE90036F394 /* OfflineShopLego.sqlite */,
 				B70E4C68165BE67000B1964B /* lego.plist */,
@@ -1236,8 +1241,6 @@
 		B793BB2F165A832A00F3A160 = {
 			isa = PBXGroup;
 			children = (
-				B794A3AF165E96030036F394 /* Icon@2x.png */,
-				B794A3AD165E96000036F394 /* Icon.png */,
 				B70E4C67165BE63000B1964B /* Resources */,
 				B793BB46165A832A00F3A160 /* OfflineShopLego */,
 				B793BB3D165A832A00F3A160 /* Frameworks */,
@@ -1275,6 +1278,8 @@
 				B793BB5F165A832A00F3A160 /* MasterViewController.m */,
 				B793BB61165A832A00F3A160 /* DetailViewController.h */,
 				B793BB62165A832A00F3A160 /* DetailViewController.m */,
+				B7A2B9351661C61F00ABC5ED /* SettingsViewController.h */,
+				B7A2B9361661C61F00ABC5ED /* SettingsViewController.m */,
 				B793BB47165A832A00F3A160 /* Supporting Files */,
 			);
 			path = OfflineShopLego;
@@ -2522,6 +2527,7 @@
 				B793BB60165A832A00F3A160 /* MasterViewController.m in Sources */,
 				B793BB63165A832A00F3A160 /* DetailViewController.m in Sources */,
 				B70E4CB7165BF95E00B1964B /* OfflineShopLego.xcdatamodeld in Sources */,
+				B7A2B9371661C61F00ABC5ED /* SettingsViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
